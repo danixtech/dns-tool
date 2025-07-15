@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install dnspython prettytable
+          pip install -f requirements.txt
 
       - name: Run DNS tool (PrettyTable output)
         run: |
