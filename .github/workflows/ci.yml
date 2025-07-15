@@ -32,6 +32,10 @@ jobs:
         run: |
           python dns-tool.py -d google.com -r MX --csv
 
+      - name: Run DNS tool (JSON output)
+        run: |
+          python dns-tool.py -d google.com -r CNAME --json
+
       - name: Upload CSV output (if exists)
         uses: actions/upload-artifact@v4
         with:
@@ -39,3 +43,9 @@ jobs:
           path: dns_output.csv
           if-no-files-found: ignore
 
+      - name: Upload JSON output (if exists)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dns-output-json
+          path: dns_output.json
+          if-no-files-found: ignore
