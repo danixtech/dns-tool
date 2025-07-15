@@ -1,0 +1,41 @@
+# Tests the dns-tool.py script
+name: dns-tool
+on:
+  push:
+    paths:
+      - '**.py'
+      - '.github/workflows/dns-tool.yaml'
+  workflow_dispatch:
+
+jobs:
+  dns-query:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install dnspython prettytable
+
+      - name: Run DNS tool (PrettyTable output)
+        run: |
+          python dns-tool.py -d google.com -r A
+
+      - name: Run DNS tool (CSV output)
+        run: |
+          python dns-tool.py -d google.com -r MX --csv
+
+      - name: Upload CSV output (if exists)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dns-output-csv
+          path: dns_output.csv
+          if-no-files-found: ignore
+

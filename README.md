@@ -1,6 +1,6 @@
 ## Overview ##
 This will query DNS servers in order to compare the results world-wide.  You can
-specify a specific server to use or you can leave it blank to automatically 
+specify a specific server to use or you can leave it blank to automatically
 query a preselected list of servers.
 
 ## Default DNS Server List ##
@@ -8,10 +8,8 @@ query a preselected list of servers.
 - 8.8.4.4 (google)
 - 4.2.2.1 (Level 3)
 - recpubns1.nstld.net
-- ns1.exetel.com.au
 - resolver1.level3.net
 - ordns.he.net
-- safe.dns.yandex.ru
 - resolver1.opendns.com
 - resolver2.opendns.com
 
@@ -24,15 +22,31 @@ query a preselected list of servers.
 - TXT - Text file records
 
 ## Usage Examples ##
-Query default list
+Query default list of nameservers
 
-  ```python dns-tool.py -d example-domain.com```
+  ```python dns-tool.py -d example.com```
 
-Query for a specific record
+Query for a specific record type
 
-  ```python dns-tool.py -d example-domain.com -r A```
+  ```python dns-tool.py -d example.com -r A```
 
-Query a specific DNS server
+Query a specific DNS nameserver
 
-  ```python dns-tool.py -d example-domain.com -n ns.galois.com```
+  ```python dns-tool.py -d example.com -n resolver1.opendns.com```
+
+Output to CSV file
+
+  ```python dns-tool.py -d google.com -r MX --csv```
+
+Ouptut to JSON file
+
+  ```python dns-tool.py -d google.com -r TXT --json```
+
+Query a specific nameserver
+
+  ```python dns-tool.py -d google.com -r AAAA -n 8.8.8.8```
+
+Adjust multi-threading for Query.  Allows for parallel queries
+
+  ```python dns-tool.py -d google.com -r A --threads 10```
 
