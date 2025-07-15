@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 #
 # dns-tool.py
 #
@@ -19,67 +19,89 @@
 # Intial Setup
 #
 
-# Variables
-dns_default_list = [
-	"8.8.8.8", \
-	"8.8.4.4", \
-	"4.2.2.1", \
-	"recpubns1.nstld.net", \
-	"ns1.exetel.com.au", \
-	"resolver1.level3.net", \
-	"ordns.he.net", \
-	"safe.dns.yandex.ru", \
-	"resolver1.opendns.com", \
-	"resolver2.opendns.com" \
-]
-
 # Import Modules
-import argparse, subprocess, time
+import argparse
+import time
+import dns.resolver
+from prettytable import PrettyTable
+
+# Default DNS resolvers
+dns_default_list = [
+    "8.8.8.8",
+    "8.8.4.4",
+    "4.2.2.1",
+    "recpubns1.nstld.net",
+    "resolver1.level3.net",
+    "ordns.he.net",
+    "resolver1.opendns.com",
+    "resolver2.opendns.com"
+]
 
 # Check for arguments
 def arg_check():
-	parser = argparse.ArgumentParser(prog='dns-tool.py')
-	parser.add_argument('-r', '--record', default='A', required=False, action='store', dest='record_type', help='A, AAAA, MX, PTR, SRV, TXT')
-	parser.add_argument('-d', '--domain', default='', required=True, action='store', dest='domain_name', help='Requires a valid domain name ex. google.com')
-	parser.add_argument('-n', '--nameserver', default='', required=False, action='store', dest='nameserver', help='Optional nameserver to query')
-	args = vars(parser.parse_args())
-	record_type = str(args['record_type'])
-	domain_name = str(args['domain_name'])
-	nameserver = str(args['nameserver'])
-	return record_type, domain_name, nameserver
+    parser = argparse.ArgumentParser(prog='dns-tool.py')
+    parser.add_argument('-r', '--record', default='A', required=False,
+                        help='A, AAAA, MX, PTR, SRV, TXT')
+    parser.add_argument('-d', '--domain', required=True,
+                        help='Domain to query, e.g. google.com')
+    parser.add_argument('-n', '--nameserver', required=False, default='',
+                        help='Optional single nameserver to query (IP or hostname)')
+    return parser.parse_args()
 
-# DNS Query Function
-def dns_query(record_type, domain_name, nameserver):
-	# Check for supplied nameserver
-	if nameserver != "":
-		# Use supplied nameserver
-		dns_server_list = [nameserver]
-	else:
-		# Use default nameserver list
-		dns_server_list = dns_default_list
+# DNS Query Function using dnspython
+def dns_query(record_type, domain_name, dns_servers):
+    results = []
 
-	# Loop through dns_server list
-	for dns_server in dns_server_list:
-		query_command = "dig +noall +answer " + record_type + " @" + dns_server + " " + domain_name
-		print("Name Server: " + dns_server)
-		result = subprocess.Popen(query_command, shell=True)
-		#print(query_command)
-		time.sleep(1)
+    for dns_server in dns_servers:
+        resolver = dns.resolver.Resolver()
+        resolver.nameservers = [dns_server] if not dns_server.endswith('.net') else []
+        resolver.nameserver = dns_server  # for hostnames
+        resolver.lifetime = 2.0
+        resolver.timeout = 2.0
+
+        print(f"Querying: {dns_server}")
+        try:
+            # For hostnames like recpubns1.nstld.net, we need to resolve it first
+            if not dns_server.replace('.', '').isdigit():
+                dns_server_ip = dns.resolver.resolve(dns_server, 'A')[0].to_text()
+                resolver.nameservers = [dns_server_ip]
+            answers = resolver.resolve(domain_name, record_type)
+            for rdata in answers:
+                results.append((dns_server, record_type, str(rdata)))
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout,
+                dns.resolver.NoNameservers, dns.resolver.YXDOMAIN) as e:
+            results.append((dns_server, record_type, f"Error: {str(e)}"))
+        time.sleep(0.5)  # small delay between queries
+
+    return results
 
 # Main function
 def main():
-	# Check optional Arguments
-	record_type, domain_name, nameserver = arg_check()
-	
-	# Query DNS server
-	dns_query(record_type, domain_name, nameserver)
+    args = arg_check()
+
+    record_type = args.record.upper()
+    domain_name = args.domain
+    nameserver = args.nameserver
+
+    if nameserver:
+        dns_servers = [nameserver]
+    else:
+        dns_servers = dns_default_list
+
+    results = dns_query(record_type, domain_name, dns_servers)
+
+    # Display results with PrettyTable
+    table = PrettyTable(["DNS Server", "Record Type", "Result"])
+    for res in results:
+        table.add_row(res)
+
+    print("\nDNS Query Results:")
+    print(table)
+
+# Run the script
+if __name__ == '__main__':
+    main()
 
 #
-# Main
-#
-
-main()
-
-#
-# eof
+# vim: set syntax=python
 #
