@@ -144,7 +144,10 @@ def output_results(results, args):
 
     # json format
     if args.json:
-        print(json.dumps(results, indent=2))
+        #print(json.dumps(results, indent=2))
+        with open("dns_output.json", "w") as f:
+          json.dump(results, f, indent=2)
+        print("Results written to dns_output.json")
     # csv format
     elif args.csv:
         writer = csv.DictWriter(

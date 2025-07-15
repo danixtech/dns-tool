@@ -1,0 +1,4 @@
+dnspython==2.7.0
+prettytable==3.16.0
+python3-resolver==1.0.3
+wcwidth==0.2.13
