@@ -36,6 +36,7 @@ dns_default_list = [
     "8.8.8.8",
     "8.8.4.4",
     "4.2.2.1",
+    "1.1.1.1",
     "recpubns1.nstld.net",
     "resolver1.level3.net",
     "ordns.he.net",
