@@ -7,6 +7,7 @@ query a preselected list of servers.
 - 8.8.8.8 (google)
 - 8.8.4.4 (google)
 - 4.2.2.1 (Level 3)
+- 1.1.1.1 (Cloudflare)
 - recpubns1.nstld.net
 - resolver1.level3.net
 - ordns.he.net
